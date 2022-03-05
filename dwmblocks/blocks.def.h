@@ -9,3 +9,7 @@ static const Block blocks[] = {
 //sets delimeter between status commands. NULL character ('\0') means no delimeter.
 static char delim[] = " | ";
 static unsigned int delimLen = 5;
+
+//set a cwd to automatically switch to here. useful for running scripts inside .sh files.
+static char cwd[] = "/home/your_username";
+

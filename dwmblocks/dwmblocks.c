@@ -59,9 +59,12 @@ static int returnStatus = 0;
 void getcmd(const Block *block, char *output)
 {
 	strcpy(output, block->icon);
-	FILE *cmdf = popen(block->command, "r");
-	if (!cmdf)
-		return;
+        if (cwd) {
+            chdir(cwd);
+        }
+        FILE *cmdf = popen(block->command, "r");
+        if(!cmdf)
+            return;
 	int i = strlen(block->icon);
 	fgets(output+i, CMDLENGTH-i-delimLen, cmdf);
 	i = strlen(output);

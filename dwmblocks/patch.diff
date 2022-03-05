@@ -1,0 +1,118 @@
+diff --git a/README.md b/README.md
+index dda2259..65af130 100644
+--- a/README.md
++++ b/README.md
+@@ -1,5 +1,5 @@
+ # dwmblocks
+-Modular status bar for dwm written in c.
++Modular status bar for dwm written in c. Slightly modified to automatically switch to a current working directory for scripts and whatnot.
+ # usage
+ To use dwmblocks first run 'make' and then install it with 'sudo make install'.
+ After that you can put dwmblocks in your xinitrc or other startup script to have it start with dwm.
+@@ -12,4 +12,5 @@ This is so you can edit your status bar commands and they will not get overwritt
+ Here are some patches to dwmblocks that add features that I either don't want to merge in, or that require a dwm patch to work.
+ I do not maintain these but I will take pull requests to update them.
+ <br>
+-<a href=https://gist.github.com/IGeraGera/e4a5583b91b3eec2e81fdceb44dea717>dwmblocks-statuscmd-b6b0be4.diff</a>
++<a href=https://gist.github.com/IGeraGera/e4a5583b91b3eec2e81fdceb44dea717>dwmblocks-statuscmd-b6b0be4.diff</a><br>
++<a href="patches/cwd.diff">cwd.diff</a>
+diff --git a/blocks.def.h b/blocks.def.h
+index 9c22d68..8efd105 100644
+--- a/blocks.def.h
++++ b/blocks.def.h
+@@ -9,3 +9,7 @@ static const Block blocks[] = {
+ //sets delimeter between status commands. NULL character ('\0') means no delimeter.
+ static char delim[] = " | ";
+ static unsigned int delimLen = 5;
++
++//set a cwd to automatically switch to here. useful for running scripts inside .sh files.
++static char cwd[] = "/home/your_username";
++
+diff --git a/dwmblocks.c b/dwmblocks.c
+index befd252..657c2c4 100644
+--- a/dwmblocks.c
++++ b/dwmblocks.c
+@@ -59,9 +59,12 @@ static int returnStatus = 0;
+ void getcmd(const Block *block, char *output)
+ {
+ 	strcpy(output, block->icon);
+-	FILE *cmdf = popen(block->command, "r");
+-	if (!cmdf)
+-		return;
++        if (cwd) {
++            chdir(cwd);
++        }
++        FILE *cmdf = popen(block->command, "r");
++        if(!cmdf)
++            return;
+ 	int i = strlen(block->icon);
+ 	fgets(output+i, CMDLENGTH-i-delimLen, cmdf);
+ 	i = strlen(output);
+diff --git a/helpers.sh b/helpers.sh
+new file mode 100755
+index 0000000..a5d39c3
+--- /dev/null
++++ b/helpers.sh
+@@ -0,0 +1,24 @@
++#!/bin/sh
++# some helper functions for dwmblocks
++get_battery() {
++    # you might need to change this path depending on your device
++    read -r bat_status < /sys/class/power_supply/BAT0/status;
++    read -r bat_capacity < /sys/class/power_supply/BAT0/capacity;
++    
++    if [ $((bat_capacity <= 50)) ]; then
++        symbol="";
++    elif [ $((bat_capacity <= 20)) ]; then
++        symbol="";
++    elif [ $((bat_capacity <= 10)) ]; then
++        symbol="";
++    elif [ bat_status == "Charging" ] || [ bat_status == "Full" ]; then
++        symbol="";
++    else
++        symbol="";
++    fi
++
++    echo "$symbol $bat_capacity%";
++}
++
++"$@";
++
+diff --git a/patches/cwd.diff b/patches/cwd.diff
+new file mode 100644
+index 0000000..2b5bccc
+--- /dev/null
++++ b/patches/cwd.diff
+@@ -0,0 +1,32 @@
++diff --git a/blocks.def.h b/blocks.def.h
++index 9c22d68..8efd105 100644
++--- a/blocks.def.h
+++++ b/blocks.def.h
++@@ -9,3 +9,7 @@ static const Block blocks[] = {
++ //sets delimeter between status commands. NULL character ('\0') means no delimeter.
++ static char delim[] = " | ";
++ static unsigned int delimLen = 5;
+++
+++//set a cwd to automatically switch to here. useful for running scripts inside .sh files.
+++static char cwd[] = "/home/your_username";
+++
++diff --git a/dwmblocks.c b/dwmblocks.c
++index befd252..657c2c4 100644
++--- a/dwmblocks.c
+++++ b/dwmblocks.c
++@@ -59,9 +59,12 @@ static int returnStatus = 0;
++ void getcmd(const Block *block, char *output)
++ {
++ 	strcpy(output, block->icon);
++-	FILE *cmdf = popen(block->command, "r");
++-	if (!cmdf)
++-		return;
+++        if (cwd) {
+++            chdir(cwd);
+++        }
+++        FILE *cmdf = popen(block->command, "r");
+++        if(!cmdf)
+++            return;
++ 	int i = strlen(block->icon);
++ 	fgets(output+i, CMDLENGTH-i-delimLen, cmdf);
++ 	i = strlen(output);
