@@ -1,0 +1,7 @@
+# ignore whatever binary things may exist in the directory
+*.o
+
+# ignore dwm binary + install fragments
+dwm/dwm
+
+

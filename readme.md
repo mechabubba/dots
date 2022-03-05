@@ -1,4 +1,4 @@
-# B) swag
-i use arch linux for fun and learning purposes, but eventually i'd like to use linux full time.
+# B)
+I use Linux (arch btw) for fun and learning purposes (mostly programming and tinkering recently), but eventually I'd like to use it for everything.
 
-here are my dotfiles for my setup.
+These are the dotfiles for my setup. They are managed by [GNU Stow](https://gnu.org/software/stow/).
